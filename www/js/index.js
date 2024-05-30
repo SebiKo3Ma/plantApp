@@ -27,3 +27,177 @@ function onDeviceReady() {
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
     document.getElementById('deviceready').classList.add('ready');
 }
+
+AWS.config.region = 'eu-central-1'; // Region
+
+// Configure the credentials provider to use Amazon Cognito
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'eu-central-1:681ea9ab-c4a4-486d-82b9-feba4a5da5ad'
+});
+
+const s3 = new AWS.S3();
+const bucketName = 'raspi-galeata';
+
+async function listRecentObjects(bucketName, maxKeys = 10) {
+    const params = {
+        Bucket: bucketName,
+        MaxKeys: 1000
+    };
+    
+    const data = await s3.listObjectsV2(params).promise();
+    // Sort objects by LastModified date in descending order and take the most recent 10
+    const recentObjects = data.Contents.sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified)).slice(0, maxKeys);
+    return recentObjects;
+}
+
+async function getObjectData(bucketName, key) {
+    const params = {
+        Bucket: bucketName,
+        Key: key
+    };
+    
+    const data = await s3.getObject(params).promise();
+    return data.Body.toString('utf-8');
+}
+
+let timestamps = [];
+let plant1Moisture = [];
+let plant2Moisture = [];
+
+function populateTable(records) {
+    const tableBody = document.getElementById('recordsTable').querySelector('tbody');
+    records.forEach(record => {
+        const row = document.createElement('tr');
+        record.forEach(field => {
+            const cell = document.createElement('td');
+            cell.textContent = field;
+            row.appendChild(cell);
+        });
+        tableBody.appendChild(row);
+    });
+}
+
+async function fetchAndDisplayRecords() {
+    try {
+        const recentObjects = await listRecentObjects(bucketName);
+
+        const records = [];
+        for (const obj of recentObjects) {
+            const csvData = await getObjectData(bucketName, obj.Key);
+            const parsedData = Papa.parse(csvData).data; // Parse CSV data
+            records.push(...parsedData);
+
+            parsedData.forEach(row => {
+                timestamps.push(row[0]);
+                plant1Moisture.push(parseFloat(row[1]));
+                plant2Moisture.push(parseFloat(row[3]));
+            });
+        }
+
+        populateTable(records);
+        createCharts();
+    } catch (error) {
+        console.error('Error fetching or displaying records:', error);
+    }
+}
+
+function createCharts() {
+    const ctx1 = document.getElementById('plant1MoistureChart').getContext('2d');
+    const ctx2 = document.getElementById('plant2MoistureChart').getContext('2d');
+
+    const linePlugin = {
+        id: 'linePlugin',
+        afterDatasetsDraw: function(chart) {
+            if (chart.tooltip._active && chart.tooltip._active.length) {
+                const ctx = chart.ctx;
+                const activePoint = chart.tooltip._active[0];
+                const datasetIndex = activePoint.datasetIndex;
+                const index = activePoint.index;
+                const yValue = chart.data.datasets[datasetIndex].data[index];
+
+                ctx.save();
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = yValue > 20000 ? 'red' : 'blue';
+                ctx.textAlign = 'center';
+                ctx.fillText(yValue > 20000 ? 'Dry' : 'Wet', activePoint.element.x, activePoint.element.y - 10);
+                ctx.restore();
+            }
+        }
+    };
+
+    Chart.register(linePlugin);
+
+    const commonOptions = {
+        type: 'line',
+        options: {
+            plugins: {
+                linePlugin: true,
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
+                        displayFormats: {
+                            minute: 'yyyy-MM-dd HH:mm'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    min: 0,
+                    max: 30000
+                }
+            },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 20000,
+                            yMax: 20000,
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            label: {
+                                content: 'Dry/Wet Threshold',
+                                enabled: true,
+                                position: 'start'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    const plant1MoistureChart = new Chart(ctx1, {
+        ...commonOptions,
+        data: {
+            labels: timestamps,
+            datasets: [{
+                label: 'Plant 1 Moisture',
+                data: plant1Moisture,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                fill: false
+            }]
+        }
+    });
+
+    const plant2MoistureChart = new Chart(ctx2, {
+        ...commonOptions,
+        data: {
+            labels: timestamps,
+            datasets: [{
+                label: 'Plant 2 Moisture',
+                data: plant2Moisture,
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1,
+                fill: false
+            }]
+        }
+    });
+}
+
+fetchAndDisplayRecords();

@@ -28,7 +28,8 @@
             * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
                 * Enable inline JS: add 'unsafe-inline' to default-src
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+        <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+        -->
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
@@ -37,7 +38,44 @@
         <title>IoT Smart Plant Monitor</title>
     </head>
     <body>
+        <div class="app">
+            <div id="deviceready">
+            </div>
+        </div>
+
+        <div class="titlecard">
+            <h1>Monitor your plants</h1>
+        </div>
+        
+        <div id="tableContainer">
+            <table class="table" id="recordsTable">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Moisture (Plant 1)</th>
+                    <th>Plant 1 Status</th>
+                    <th>Moisture (Plant 2)</th>
+                    <th>Plant 1 Status</th>
+                    <th>Light Level</th>
+                </tr>
+            </table>
+        </div>
+        <div class="canvasContainer">
+            <div class="canvas">
+                <h2>Plant 1 Moisture Levels</h2>
+                <canvas id="plant1MoistureChart"></canvas>
+            </div>
+            <div class="canvas">
+                <h2>Plant 2 Moisture Levels</h2>
+                <canvas id="plant2MoistureChart"></canvas>
+            </div>
+        </div>
+
         <script src="cordova.js"></script>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>    
         <script src="js/index.js"></script>
     </body>
 </html>

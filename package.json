@@ -14,12 +14,20 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "cordova-android": "^13.0.0",
-    "cordova-browser": "^7.0.0"
+    "cordova-browser": "^7.0.0",
+    "cordova-plugin-badge": "^0.8.9",
+    "cordova-plugin-device": "^2.1.0",
+    "cordova-plugin-local-notification": "github:katzer/cordova-plugin-local-notifications"
   },
   "cordova": {
     "platforms": [
       "browser",
       "android"
-    ]
+    ],
+    "plugins": {
+      "cordova-plugin-local-notification": {
+        "ANDROID_SUPPORT_V4_VERSION": "26.+"
+      }
+    }
   }
 }
