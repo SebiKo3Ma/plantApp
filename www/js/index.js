@@ -116,7 +116,7 @@ function createCharts() {
                 const yValue = chart.data.datasets[datasetIndex].data[index];
 
                 ctx.save();
-                ctx.font = 'bold 12px Arial';
+                ctx.font = 'bold 6px Arial';
                 ctx.fillStyle = yValue > 20000 ? 'red' : 'blue';
                 ctx.textAlign = 'center';
                 ctx.fillText(yValue > 20000 ? 'Dry' : 'Wet', activePoint.element.x, activePoint.element.y - 10);
@@ -135,12 +135,10 @@ function createCharts() {
             },
             scales: {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'minute',
-                        tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
-                        displayFormats: {
-                            minute: 'yyyy-MM-dd HH:mm'
+                    type: 'linear', // Change x-axis to linear
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return index + 1; // Show index + 1 as the label
                         }
                     }
                 },
@@ -158,12 +156,15 @@ function createCharts() {
                             yMin: 20000,
                             yMax: 20000,
                             borderColor: 'red',
-                            borderWidth: 2,
-                            label: {
-                                content: 'Dry/Wet Threshold',
-                                enabled: true,
-                                position: 'start'
-                            }
+                            borderWidth: 2
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const index = tooltipItems[0].dataIndex;
+                            return timestamps[timestamps.length - 1 - index]; // Show the reversed timestamp
                         }
                     }
                 }
@@ -171,13 +172,18 @@ function createCharts() {
         }
     };
 
+    // Reverse the data arrays
+    const reversedTimestamps = [...timestamps].reverse();
+    const reversedPlant1Moisture = [...plant1Moisture].reverse();
+    const reversedPlant2Moisture = [...plant2Moisture].reverse();
+
     const plant1MoistureChart = new Chart(ctx1, {
         ...commonOptions,
         data: {
-            labels: timestamps,
+            labels: reversedPlant1Moisture.map((_, i) => i + 1), // Use indices as labels
             datasets: [{
                 label: 'Plant 1 Moisture',
-                data: plant1Moisture,
+                data: reversedPlant1Moisture,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
                 fill: false
@@ -188,10 +194,10 @@ function createCharts() {
     const plant2MoistureChart = new Chart(ctx2, {
         ...commonOptions,
         data: {
-            labels: timestamps,
+            labels: reversedPlant2Moisture.map((_, i) => i + 1), // Use indices as labels
             datasets: [{
                 label: 'Plant 2 Moisture',
-                data: plant2Moisture,
+                data: reversedPlant2Moisture,
                 borderColor: 'rgba(153, 102, 255, 1)',
                 borderWidth: 1,
                 fill: false

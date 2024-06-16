@@ -133,12 +133,27 @@ td, th{
 }
 
 .canvasContainer{
-    display: flex;
-    justify-content: space-around;
+    padding-left: 5%;
 }
 
 .canvas{
     background-color: #FFFFFF;
     border-radius: 5px;
-    width: 40%;
+    width: 95%;
+}
+
+#takePicture{
+    padding: 10px;
+    border-radius: 10px;
+    color:#4B946A;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #FFFFFF;
+    margin-left: 47%;
+    margin-top: 20px;
+}
+
+.pictures{
+    margin-left: 43%;
+    margin-top: 10px;
 }

@@ -69,13 +69,21 @@
                 <canvas id="plant2MoistureChart"></canvas>
             </div>
         </div>
+        <div class="titlecard">
+            <h1>Check your plant's health</h1>
+        </div>
+        <button id="takePicture">Take Picture</button>
+        <img class="pictures" id="plantImage" src="" alt="Plant Image" style="display:none;">
+        <p class="pictures" id="result"></p>
 
         <script src="cordova.js"></script>
         <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>    
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>    
         <script src="js/index.js"></script>
+        <script src="js/model.js"></script>
     </body>
 </html>
